@@ -22,7 +22,13 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/minica660/itemCheker")
+            url = uri("https://maven.pkg.github.com/minica660/itemcheker")
+
+            artifactId = "itemcheker"
+
+            groupId = "com.github.minica660"
+            
+
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
                 password = System.getenv("GITHUB_TOKEN")

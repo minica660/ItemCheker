@@ -1,0 +1,14 @@
+name: ItemCheker
+version: '1.1'
+
+main: MiniCash.ItemCheker
+api-version: '1.21.11'
+load: POSTWORLD
+authors:
+  - MiniCash
+description: アイテムが作業台や金床で使用されるのを防ぐプラグイン
+
+permissions:
+  itemcheker.command.lock:
+    default: false
+    description: アイテムを保護したり保護の解除を行うために必要な権限！

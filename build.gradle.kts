@@ -19,19 +19,19 @@ java {
     toolchain.languageVersion = JavaLanguageVersion.of(26)
 }
 publishing {
-    publications {
-        create<MavenPublication>("gpr") {
-            from(components["java"])
-        }
-    }
     repositories {
         maven {
-            name = "ItemCheker"
+            name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/minica660/itemCheker")
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
                 password = System.getenv("GITHUB_TOKEN")
             }
+        }
+    }
+    publications {
+        create<MavenPublication>("gpr") {
+            from(components["java"])
         }
     }
 }

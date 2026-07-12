@@ -1,7 +1,10 @@
 plugins {
     id("java-library")
     id("xyz.jpenilla.run-paper") version "3.0.2"
+    id ("maven-publish")
+
 }
+
 
 repositories {
     mavenCentral()
@@ -15,7 +18,22 @@ dependencies {
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(21)
 }
-
+publishing {
+    publications {
+        create<MavenPublication>("gpr") {
+            from(components["java"])
+        }
+    }
+    repositories {
+        maven {
+            name = "ItemCheker"
+            url = uri("https://maven.pkg.github.com/minica660/ItemCheker")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
 tasks {
     runServer {
         // Configure the Minecraft version for our task.

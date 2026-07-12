@@ -23,10 +23,6 @@ publishing {
         maven {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/minica660/itemcheker")
-
-            artifactId = "itemcheker"
-
-            groupId = "com.github.minica660"
             
 
             credentials {
@@ -37,6 +33,9 @@ publishing {
     }
     publications {
         create<MavenPublication>("gpr") {
+            artifactId = "itemcheker"
+            groupId = "com.github.minica660"
+
             from(components["java"])
         }
     }

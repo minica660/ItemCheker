@@ -50,15 +50,29 @@ public class Event implements Listener {
             int slot = event.getSlot();
 
             if(isMaterialSlot(type,slot)){
+
                 ItemStack cursorItem = event.getCursor();
 
-                // カーソルに持っているアイテムが保護対象ならキャンセル
-                if (cursorItem != null && cursorItem.getType() != Material.AIR) {
-                    if (ItemChekerAPI.isProtected(cursorItem)) {
-                        event.setCancelled(true);
-                        return;
+                if (event.getAction().name().contains("PLACE")) {
+                    // カーソルに持っているアイテムが保護対象ならキャンセル
+                    if (cursorItem != null && cursorItem.getType() != Material.AIR) {
+                        if (ItemChekerAPI.isProtected(cursorItem)) {
+                            event.setCancelled(true);
+                            return;
+                        }
+                    }
+
+                }
+
+                if (event.getAction() == InventoryAction.SWAP_WITH_CURSOR) {
+                    if (cursorItem != null && cursorItem.getType() != Material.AIR) {
+                        if (ItemChekerAPI.isProtected(cursorItem)) {
+                            event.setCancelled(true);
+                            return;
+                        }
                     }
                 }
+
             }
 
 
@@ -70,6 +84,39 @@ public class Event implements Listener {
 
     }
 
+    @EventHandler
+    public void onInventoryDrag(InventoryDragEvent event) {
+        
+        Inventory topInventory = event.getView().getTopInventory();
+        InventoryType type = topInventory.getType();
+
+        if (!protectType(type)) {
+            return;
+        }
+
+        // ドラッグしようとしているアイテムのチェック
+        ItemStack draggedItem = event.getOldCursor();
+        if (draggedItem.getType() == Material.AIR) {
+            return;
+        }
+
+        if (ItemChekerAPI.isProtected(draggedItem)) {
+            // ドラッグによってアイテムが置かれる予定の全スロット（生のID）をループ
+            for (int rawSlot : event.getRawSlots()) {
+
+                // 生のスロットIDが、上インベントリ（作業台など）の範囲内かチェック
+                if (rawSlot < topInventory.getSize()) {
+
+                    // 素材スロット（0から始まるインベントリ固有のスロット番号）に該当するかチェック
+                    if (isMaterialSlot(type, rawSlot)) {
+                        // 1つでも保護対象スロットへの配置が含まれていればドラッグ全体をキャンセル
+                        event.setCancelled(true);
+                        return;
+                    }
+                }
+            }
+        }
+    }
 
     private boolean protectType(InventoryType type){
         return type == InventoryType.WORKBENCH

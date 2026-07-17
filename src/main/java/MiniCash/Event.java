@@ -86,7 +86,7 @@ public class Event implements Listener {
 
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent event) {
-        
+
         Inventory topInventory = event.getView().getTopInventory();
         InventoryType type = topInventory.getType();
 
@@ -122,8 +122,20 @@ public class Event implements Listener {
         return type == InventoryType.WORKBENCH
                 || type == InventoryType.ANVIL
                 || type == InventoryType.SMITHING       // 鍛冶台を追加
-                || type == InventoryType.CARTOGRAPHY;
+                || type == InventoryType.CARTOGRAPHY
+                || type == InventoryType.FURNACE
+                || type == InventoryType.SMOKER
+                || type == InventoryType.BLAST_FURNACE
+                || type == InventoryType.BREWING
+                || type == InventoryType.HOPPER
+                || type == InventoryType.ENCHANTING
+                || type == InventoryType.GRINDSTONE
+                || type == InventoryType.LOOM
+                || type == InventoryType.STONECUTTER
+                || type == InventoryType.BEACON
+                || type == InventoryType.CRAFTER;
     }
+
 
     private boolean isMaterialSlot(InventoryType type, int slot) {
         return switch (type) {
@@ -139,8 +151,45 @@ public class Event implements Listener {
             // 製図台
             case CARTOGRAPHY -> (slot == 0 || slot == 1);
 
+            case FURNACE, SMOKER, BLAST_FURNACE -> (slot == 0 || slot == 1);
+            // 醸造台
+            case BREWING -> (slot >= 0 && slot <= 4);
+            // エンチャントテーブル
+            case ENCHANTING -> (slot == 0 || slot == 1);
+            // 砥石
+            case GRINDSTONE -> (slot == 0 || slot == 1);
+            // 織機
+            case LOOM -> (slot >= 0 && slot <= 2);
+            // ストーンカッター
+            case STONECUTTER -> (slot == 0);
+            // ビーコン
+            case BEACON -> (slot == 0);
+
+            case CRAFTER -> (slot >= 0 && slot <= 8);
+
+            case HOPPER -> (slot >= 0 && slot <= 4);
+
             default -> false;
         };
+    }
+
+
+    @EventHandler
+    public void inventoryPickup(InventoryPickupItemEvent event) {
+
+        if (event.isCancelled()) {
+            return;
+        }
+
+        ItemStack item = event.getItem().getItemStack();
+
+        if (ItemChekerAPI.isProtected(item)) {
+            if (event.getInventory().getType() == InventoryType.HOPPER) {
+
+                event.setCancelled(true);
+
+            }
+        }
     }
 
 }

@@ -84,7 +84,7 @@ public class Event implements Listener {
 
     }
 
-    @EventHandler
+        @EventHandler
     public void onInventoryDrag(InventoryDragEvent event) {
 
         Inventory topInventory = event.getView().getTopInventory();
@@ -101,17 +101,16 @@ public class Event implements Listener {
         }
 
         if (ItemChekerAPI.isProtected(draggedItem)) {
-            // ドラッグによってアイテムが置かれる予定の全スロット（生のID）をループ
+            
             for (int rawSlot : event.getRawSlots()) {
 
-                // 生のスロットIDが、上インベントリ（作業台など）の範囲内かチェック
                 if (rawSlot < topInventory.getSize()) {
 
-                    // 素材スロット（0から始まるインベントリ固有のスロット番号）に該当するかチェック
                     if (isMaterialSlot(type, rawSlot)) {
-                        // 1つでも保護対象スロットへの配置が含まれていればドラッグ全体をキャンセル
+                        
                         event.setCancelled(true);
                         return;
+                        
                     }
                 }
             }

@@ -26,12 +26,9 @@ public class LockCommand implements BasicCommand {
                 return;
             }
 
-            if (ItemChekerAPI.isSystemProtected(item)) {
-                player.sendMessage(main.append(Component.text("このアイテムはシステムによって保護されていたため解除できませんでした").color(NamedTextColor.RED)));
-                return;
-            }
 
-            if (ItemChekerAPI.isPlayerProtected(item)) {
+            if (ItemChekerAPI.isProtectionLocked(item)) {
+
                 boolean success = ItemChekerAPI.removePlayerProtection(item);
                 if (success) {
                 player.sendMessage(main.append(Component.text("アイテムの保護を解除しました\n作業台などでアイテムを使用できます").color(NamedTextColor.DARK_GREEN)));
@@ -43,7 +40,7 @@ public class LockCommand implements BasicCommand {
                 return;
             }
 
-            ApplyProtectionResult result = ItemChekerAPI.applyProtection(item, ItemChekerAPI.ProtectionType.PLAYER);
+            ApplyProtectionResult result = ItemChekerAPI.applyProtection(item);
             if (result.isSuccess()) {
 
                 player.sendMessage(main.append(Component.text("アイテムを保護しました\n作業台などでアイテムを使用できなくなりました").color(NamedTextColor.YELLOW)));

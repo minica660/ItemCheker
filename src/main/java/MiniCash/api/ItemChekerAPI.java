@@ -20,6 +20,7 @@ public class ItemChekerAPI {
         namespacedKey = new NamespacedKey(plugin, "item_cheker_protected_item");
     }
 
+    @Deprecated
     public enum ProtectionType {
         SYSTEM("system"),
         PLAYER("player");
@@ -34,15 +35,16 @@ public class ItemChekerAPI {
 
     }
 
-    public static ApplyProtectionResult applyProtection(ItemStack item , ProtectionType type) {
+    public static ApplyProtectionResult applyProtection(ItemStack item ) {
 
         if (item == null || item.getType().isAir()) {
             return new ApplyProtectionResult(item , false , "指定されたアイテムがなかったため保護キーを指定できませんでした");
         }
 
+
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            meta.getPersistentDataContainer().set(namespacedKey, PersistentDataType.STRING ,  type.getValue());
+            meta.getPersistentDataContainer().set(namespacedKey, PersistentDataType.BOOLEAN ,  true);
             item.setItemMeta(meta);
         }
 
@@ -50,7 +52,8 @@ public class ItemChekerAPI {
     }
 
     public static boolean removePlayerProtection(ItemStack item) {
-        if (!isPlayerProtected(item)) {
+
+        if (!isProtectionLocked(item)){
             return false;
         }
 
@@ -65,21 +68,33 @@ public class ItemChekerAPI {
 
 
 
-    public static boolean isProtected(ItemStack item) {
-        if (item == null || item.getType().isAir()) {
-            return false;
+    public static boolean isProtectionLocked(ItemStack item) {
+        if (item == null || item.getType().isAir()) return false;
+
+        ItemMeta itemMeta = item.getItemMeta();
+
+        if (itemMeta.getPersistentDataContainer().has(namespacedKey, PersistentDataType.BOOLEAN)) {
+            return true;
         }
 
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) {
-            return false;
+
+        if (item.hasItemMeta()) {
+
+                if (itemMeta.hasCustomModelDataComponent()){
+                    return true;
+                }
+
+                if (itemMeta.hasItemModel()){
+                    return true;
+                }
+
         }
 
-
-        return meta.getPersistentDataContainer().has(namespacedKey, PersistentDataType.STRING);
+        return false;
     }
 
 
+    @Deprecated
     public static boolean isSystemProtected(ItemStack item) {
         if (item == null || item.getType().isAir()){
             return false;
@@ -93,6 +108,7 @@ public class ItemChekerAPI {
         return ProtectionType.SYSTEM.getValue().equals(value);
     }
 
+    @Deprecated
     public static boolean isPlayerProtected(ItemStack item) {
         if (item == null || item.getType().isAir()){
             return false;

@@ -1,13 +1,18 @@
 package MiniCash;
 
 import MiniCash.api.ItemChekerAPI;
+import com.destroystokyo.paper.event.player.PlayerRecipeBookClickEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.*;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Event implements Listener {
 
@@ -20,6 +25,9 @@ public class Event implements Listener {
         }
 
         Inventory topInventory = event.getView().getTopInventory();
+        Inventory bottomInventory = event.getView().getBottomInventory();
+        Inventory clickedInventory = event.getClickedInventory();
+
         InventoryType type = topInventory.getType();
 
         ItemStack item = event.getCurrentItem();
@@ -29,20 +37,44 @@ public class Event implements Listener {
 //            return;
 //        }
 
-        if (ItemChekerAPI.isProtectionLocked(cursorItem)) {
-            if (isProcessingSlot(type, event.getSlot())) {
-                event.setCancelled(true);
-                return;
+
+        if (clickedInventory == bottomInventory) {
+            if (event.isShiftClick() && ItemChekerAPI.isProtectionLocked(item)) {
+                if (isRestrictedInventory(type)) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+            return;
+        }
+
+
+
+        if (clickedInventory == topInventory && isRestrictedInventory(type)) {
+
+            // マウスカーソルに制限アイテムを持った状態で、作業枠をクリックしたとき
+            if (ItemChekerAPI.isProtectionLocked(cursorItem)) {
+                if (isProcessingSlot(type, event.getSlot())) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+
+            // スロットに元々ある制限アイテムを、作業枠の中で動かそうとしたとき
+            if (ItemChekerAPI.isProtectionLocked(item)) {
+                if (isProcessingSlot(type, event.getSlot())) {
+                    event.setCancelled(true);
+                    return;
+                }
             }
         }
 
-        if (ItemChekerAPI.isProtectionLocked(item)){
-
-            if (isProcessingSlot(type, event.getSlot())) {
+        //  数字キー（ホットバー）による上側へのすり抜け対策
+        if (event.getClick() == ClickType.NUMBER_KEY) {
+            // アイテムを送り込もうとしたターゲット（スロット）が「上側」かつ「素材スロット」の場合のみブロック
+            if (clickedInventory == topInventory && isProcessingSlot(type, event.getSlot())) {
                 event.setCancelled(true);
-                return;
             }
-
         }
 
 //        if (event.getClick() == ClickType.NUMBER_KEY ||
@@ -54,20 +86,6 @@ public class Event implements Listener {
 //        }
 
 
-        if (event.isShiftClick() && ItemChekerAPI.isProtectionLocked(item)) {
-
-            if (event.getClickedInventory() == event.getView().getBottomInventory() && isRestrictedInventory(topInventory.getType())) {
-                event.setCancelled(true);
-            }
-
-        }
-
-        if (event.getClick() == ClickType.NUMBER_KEY) {
-            if (isProcessingSlot(type, event.getSlot())) {
-                event.setCancelled(true);
-                return;
-            }
-        }
 
 
 //        if (event.getAction() == InventoryAction.SWAP_WITH_CURSOR) {
@@ -119,12 +137,56 @@ public class Event implements Listener {
 
     }
 
+
+    @EventHandler
+    public void onRecipeBookClick(PlayerRecipeBookClickEvent event) {
+        Player player = event.getPlayer();
+
+        Recipe recipe = Bukkit.getRecipe(event.getRecipe());
+
+        if (recipe == null){
+            return;
+        }
+
+        List<Material> requiredMaterials = new ArrayList<>();
+
+        if (recipe instanceof ShapedRecipe shaped) {
+            for (ItemStack ingredient : shaped.getIngredientMap().values()) {
+                if (ingredient != null) requiredMaterials.add(ingredient.getType());
+            }
+        } else if (recipe instanceof ShapelessRecipe shapeless) {
+            for (ItemStack ingredient : shapeless.getIngredientList()) {
+                if (ingredient != null) requiredMaterials.add(ingredient.getType());
+            }
+        } else if (recipe instanceof CookingRecipe<?> cooking) { // かまど、燻製器、溶鉱炉など
+            RecipeChoice choice = cooking.getInputChoice();
+            if (choice instanceof RecipeChoice.MaterialChoice matChoice) {
+                requiredMaterials.addAll(matChoice.getChoices());
+            }
+        }
+
+        if (requiredMaterials.isEmpty()) return;
+
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (item == null || item.getType() == Material.AIR) continue;
+
+            if (requiredMaterials.contains(item.getType()) && ItemChekerAPI.isProtectionLocked(item)) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+    }
+
+
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent event) {
 
         Inventory topInventory = event.getView().getTopInventory();
         InventoryType type = topInventory.getType();
 
+        if (!isRestrictedInventory(type)) {
+            return;
+        }
 
         // ドラッグしようとしているアイテムのチェック
         ItemStack draggedItem = event.getOldCursor();
@@ -138,16 +200,12 @@ public class Event implements Listener {
 
             for (int rawSlot : event.getRawSlots()) {
 
-                if (rawSlot < topInventory.getSize()) {
 
-                    if (isProcessingSlot(type, rawSlot)) {
-                        event.setCancelled(true);
-                        return;
-                    }
+                if (rawSlot < topInventory.getSize() && isProcessingSlot(type, rawSlot)) {
+                    event.setCancelled(true);
+                    return;
                 }
-
             }
-
         }
 
     }

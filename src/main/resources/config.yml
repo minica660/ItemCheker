@@ -1,0 +1,6 @@
+block-list:
+  - STONE
+
+enchanted: false
+attributes: true
+unbreakble: true

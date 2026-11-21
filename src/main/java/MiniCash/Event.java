@@ -77,63 +77,6 @@ public class Event implements Listener {
             }
         }
 
-//        if (event.getClick() == ClickType.NUMBER_KEY ||
-//                event.getClick() == ClickType.SWAP_OFFHAND ||
-//                event.getClick() == ClickType.DOUBLE_CLICK) {
-//
-//            event.setCancelled(true);
-//            return;
-//        }
-
-
-
-
-//        if (event.getAction() == InventoryAction.SWAP_WITH_CURSOR) {
-//            if (cursorItem != null && cursorItem.getType() != Material.AIR) {
-//                if (ItemChekerAPI.isProtected(cursorItem)) {
-//                    event.setCancelled(true);
-//                    return;
-//                }
-//            }
-//        }
-
-
-//        if (event.isShiftClick()) {
-//            if (event.getClickedInventory().equals(event.getView().getBottomInventory())) {
-//                if (ItemChekerAPI.isProtected(event.getCurrentItem())) {
-//                    event.setCancelled(true);
-//                    return;
-//                }
-//            }
-//            return;
-//        }
-
-//        if (event.getClickedInventory().equals(topInventory)) {
-//            int slot = event.getSlot();
-//
-//            if(isMaterialSlot(type,slot)){
-//
-//                ItemStack cursorItem = event.getCursor();
-//
-//                if (event.getAction().name().contains("PLACE")) {
-//                    // カーソルに持っているアイテムが保護対象ならキャンセル
-//                    if (cursorItem != null && cursorItem.getType() != Material.AIR) {
-//                        if (ItemChekerAPI.isProtected(cursorItem)) {
-//                            event.setCancelled(true);
-//                            return;
-//                        }
-//                    }
-//
-//                }
-//
-//            }
-//
-//
-//        }
-
-
-
-
 
     }
 

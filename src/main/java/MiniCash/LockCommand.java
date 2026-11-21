@@ -12,7 +12,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.Nullable;
 
-import java.time.Duration;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -39,52 +38,39 @@ public class LockCommand implements BasicCommand {
             }
 
 
-            ItemStack cachedItem = pendingItems.getIfPresent(player.getUniqueId());
+            if (!ItemChekerAPI.isUnProtectedItem(item)) {
 
-            if (cachedItem == null) {
+                ItemStack cachedItem = pendingItems.getIfPresent(player.getUniqueId());
 
-                player.sendMessage(main.append(
-                        Component.text("本当に保護対象から解除しますか？ その場合は再度同じコマンドを実行してください", NamedTextColor.RED)
-                ));
+                if (cachedItem == null || !cachedItem.equals(item)) {
 
-                pendingItems.put(player.getUniqueId(), item);
+                    player.sendMessage(main.append(
+                            Component.text("本当に保護対象から解除しますか？ その場合は再度同じコマンドを実行してください", NamedTextColor.RED)
+                    ));
 
-                return;
-
-            }
-
-            if (cachedItem.equals(item)) {
+                    pendingItems.put(player.getUniqueId(), item.clone());
+                    return;
+                }
 
                 pendingItems.invalidate(player.getUniqueId());
 
-            }else {
+                ApplyProtectionResult result = ItemChekerAPI.applyUnProtection(item);
 
-                player.sendMessage(main.append(
-                        Component.text("本当に保護対象から解除しますか？ その場合は再度同じコマンドを実行してください", NamedTextColor.RED)
-                ));
-
-                pendingItems.put(player.getUniqueId(), item);
-
-                return;
-
-            }
+                if (result.isSuccess()) {
 
 
-            if (!ItemChekerAPI.isUnProtectedItem(item)) {
-
-                boolean success = ItemChekerAPI.removeUnProtected(item);
-
-                if (success) {
                     player.sendMessage(main.append(Component.text("アイテムの保護を解除しました\n作業台などでアイテムを使用できます").color(NamedTextColor.DARK_GREEN)));
 
-                } else {
+                }else {
+
                     player.sendMessage(main.append(Component.text("保護の解除に失敗しました").color(NamedTextColor.RED)));
                 }
 
                 return;
+
             }
 
-            ApplyProtectionResult result = ItemChekerAPI.applyProtection(item);
+            ApplyProtectionResult result = ItemChekerAPI.removeUnProtected(item);
             if (result.isSuccess()) {
 
                 player.sendMessage(main.append(Component.text("アイテムを保護しました\n作業台などでアイテムを使用できなくなりました").color(NamedTextColor.YELLOW)));

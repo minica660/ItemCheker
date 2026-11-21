@@ -25,7 +25,7 @@ public class ItemChekerAPI {
     }
 
 
-    public static ApplyProtectionResult applyProtection(ItemStack item ) {
+    public static ApplyProtectionResult applyUnProtection(ItemStack item ) {
 
         if (item == null || item.getType().isAir()) {
             return new ApplyProtectionResult(item , false , "指定されたアイテムがなかったため保護キーを指定できませんでした");
@@ -55,19 +55,19 @@ public class ItemChekerAPI {
         return new ApplyProtectionResult(item , true , "保護対象外キーを指定することが出来ました");
     }
 
-    public static boolean removeUnProtected(ItemStack item) {
+    public static ApplyProtectionResult removeUnProtected(ItemStack item) {
 
         if (!isProtectionLocked(item)){
-            return false;
+            return new ApplyProtectionResult(item,false, "保護が解除されていないアイテムです");
         }
 
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.getPersistentDataContainer().remove(namespacedKey);
             item.setItemMeta(meta);
-            return true;
+            return new ApplyProtectionResult(item, true, "保護を行いました");
         }
-        return false;
+        return new ApplyProtectionResult(item, false, "処理が行われませんでした");
     }
 
     private static boolean isSpecialItem(ItemStack item) {
@@ -113,7 +113,7 @@ public class ItemChekerAPI {
         ItemMeta itemMeta = item.getItemMeta();
 
         // 保護対象から外すものかの判定
-        if (itemMeta.getPersistentDataContainer().has(namespacedKey, PersistentDataType.BOOLEAN)) {
+        if (isUnProtectedItem(item)) {
             return false;
         }
 
